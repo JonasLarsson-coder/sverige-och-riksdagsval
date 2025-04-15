@@ -1,1 +1,2 @@
 "Susanne"
+console.log("Susanne")
