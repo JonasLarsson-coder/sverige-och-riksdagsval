@@ -1,9 +1,6 @@
-
 # Ingore database-in-use.json - since it may contain sensitive connection data
 databases/databases-in-use.json
-
-
-
+ 
 # Logs
 logs
 *.log
