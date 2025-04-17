@@ -18,3 +18,4 @@ dbQuery.use('riksdagsval-neo4j');
 let electionResults =
   await dbQuery('MATCH (n:Partiresultat) RETURN n LIMIT 25');
 console.log('electionResults from neo4j', electionResults);
+console.log('electionResults from neo4j', electionResults);
