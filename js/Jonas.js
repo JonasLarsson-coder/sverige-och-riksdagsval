@@ -1,6 +1,14 @@
-addMdToPage(`## Katt åt lampa, lös i magen!`)
-addMdToPage(`## Katt åt linjal, blev mätt!`)
-addMdToPage(`## Jag är världens längsta dvärg!`)
+
+
+
+addMdToPage(`## Hur förändrades antal röster på de olika partierna från de olika åren?`)
+
+dbQuery.use('riksdagsval-neo4j');
+let electionResults =
+  await dbQuery('MATCH (p:Partiresultat) RETURN p.parti AS Parti, p.roster2018 AS Röster_2018, p.roster2022 AS Röster_2022 ORDER BY p.roster2022 DESC');
+console.log('electionResults from neo4j', electionResults);
+tableFromData({ data: electionResults });
+
 dbQuery.use('counties-sqlite');
 let countyInfo = await dbQuery('SELECT * FROM countyInfo');
 console.log('countyInfo', countyInfo);
@@ -16,10 +24,3 @@ console.log('income from mongodb', income);
 dbQuery.use('kommun-info-mongodb');
 let ages = await dbQuery.collection('ageByKommun').find({}).limit(25);
 console.log('ages from mongodb', ages);
-
-dbQuery.use('riksdagsval-neo4j');
-let electionResults =
-  await dbQuery('MATCH (n:Partiresultat) RETURN n LIMIT 25');
-console.log('electionResults from neo4j', electionResults);
-
-
