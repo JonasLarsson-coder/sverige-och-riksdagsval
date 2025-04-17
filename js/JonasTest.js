@@ -23,16 +23,5 @@ let electionResults =
 console.log('electionResults from neo4j', electionResults);
 
 
-/*
-let kommunInfo = await dbQuery("db.collection.find({})") || [];
-let geoInfo = await dbQuery("SELECT * FROM geoData") || [];
-let riksdagsval = await dbQuery("MATCH (n) RETURN n LIMIT 10") || [];
 
-console.log("MongoDB-data:", kommunInfo);
-console.log("MySQL-data:", geoInfo);
-console.log("Neo4j-data:", riksdagsval);
 
-tableFromData({ data: kommunInfo.length ? kommunInfo : [{ error: "Inga data hittades!" }] });
-tableFromData({ data: geoInfo.length ? geoInfo : [{ error: "Inga data hittades!" }] });
-tableFromData({ data: riksdagsval.length ? riksdagsval : [{ error: "Inga data hittades!" }] });
-*/
