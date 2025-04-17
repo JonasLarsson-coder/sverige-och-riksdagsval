@@ -4,10 +4,10 @@
 addMdToPage(`## Hur förändrades antal röster på de olika partierna från de olika åren?`)
 
 dbQuery.use('riksdagsval-neo4j');
-let electionResults =
+let valresultat =
   await dbQuery('MATCH (p:Partiresultat) RETURN p.parti AS Parti, p.roster2018 AS Röster_2018, p.roster2022 AS Röster_2022 ORDER BY p.roster2022 DESC');
-console.log('electionResults from neo4j', electionResults);
-tableFromData({ data: electionResults });
+console.log('electionResults from neo4j', valresultat);
+tableFromData({ data: valresultat });
 
 dbQuery.use('counties-sqlite');
 let countyInfo = await dbQuery('SELECT * FROM countyInfo');
