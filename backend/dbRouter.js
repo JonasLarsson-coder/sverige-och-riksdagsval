@@ -107,16 +107,32 @@ export default async function dbRouter(app, databasesFolder, sqliteFolder) {
       if (type === 'neo4j') {
         const raw = await con.run(query);
         result = [];
-        raw.records.forEach(x => result.push(x._fields[0]));
-        // simplify result to one object per recoder
-        // put all (3!) ids inside the property ids
-        // and add labels as a property
-        result = result.map(({ properties, labels, identity, elementId }) => ({
-          ...properties,
-          id: undefined,
-          ids: { id: properties.id, identity, elementId },
-          labels
-        }));
+        if (raw.records[0]._fields[0].properties) {
+          try {
+            raw.records.forEach(x => result.push(x._fields[0]));
+            // simplify result to one object per recoder
+            // put all (3!) ids inside the property ids
+            // and add labels as a property
+            result = result.map(({ properties, labels, identity, elementId }) => ({
+              ...properties,
+              id: undefined,
+              ids: { id: properties.id, identity, elementId },
+              labels
+            }));
+          }
+          catch (e) {
+            result = raw;
+          }
+        }
+        else {
+          for (let record of raw.records) {
+            let obj = {}, co = 0;
+            for (let key of record.keys) {
+              obj[key] = record._fields[co++];
+            }
+            result.push(obj);
+          }
+        }
       }
     } catch (e) {
       result = { error: e + '' };
