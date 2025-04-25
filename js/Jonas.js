@@ -1,5 +1,12 @@
 
 
+addMdToPage(`## Antal arbetslösa per kommun i augusti 2022.`)
+addMdToPage(`Då vi inte kunde filtrera bort personer under 18 år, var vi tvungna att gå från 16 år.`)
+addMdToPage(`Valde augusti för att få en mer exakt siffra på hur många som var arbetslösa vid valets tidpunkt.`)
+dbQuery.use('arbetslösa_2022.db');
+let arbetslösaInfo = await dbQuery('SELECT Kommun, Ålder, arbetslösaAug2022 FROM arbetslöshet LIMIT 25');
+console.log('arbetslösaInfo', arbetslösaInfo);
+tableFromData({ data: arbetslösaInfo });
 
 
 
@@ -27,12 +34,7 @@ tableFromData({ data: countyInfo });
 */
 
 
-addMdToPage(`## Antal arbetslösa per kommun i augusti 2022.`)
-addMdToPage(`Då vi inte kunde filtrera bort personer under 18 år, var vi tvungna att gå från 16 år.`)
-dbQuery.use('arbetslösa_2022.db');
-let arbetslösaInfo = await dbQuery('SELECT Region, Ålder, arbetslösaAug2022 FROM arbetslöshet LIMIT 25');
-console.log('arbetslösaInfo', arbetslösaInfo);
-tableFromData({ data: arbetslösaInfo });
+
 
 
 
