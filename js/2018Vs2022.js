@@ -9,6 +9,9 @@ let electionResults =
 console.log('electionResults from neo4j', electionResults);
 //tableFromData({ data: electionResults });
 
+
+// **Skapar diagram för att jämföra röstresultat mellan 2018 och 2022**
+// Hämta data från Neo4j
 let dataForChart = (await dbQuery(`
   MATCH (p:Partiresultat) RETURN p.parti AS parti, SUM(p.roster2018) AS röster2018, SUM(p.roster2022) AS röster2022
   ORDER BY parti;
