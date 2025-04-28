@@ -156,3 +156,5 @@ function showResults() {
     resultContainer.innerHTML = '<p>Inga data tillgängliga för valt år och parti.</p>';
   }
 }
+
+
