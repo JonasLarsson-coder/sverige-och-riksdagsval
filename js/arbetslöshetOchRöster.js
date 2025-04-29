@@ -138,7 +138,8 @@ addMdToPage(`### Korrelationsanalys mellan arbetslöshet och röster
 R²-värdet berättar hur bra arbetslöshet kan förklara antalet röster i valet.
 Om R² = 1.00, arbetslösheten förklarar allt – varje förändring i arbetslöshet matchar exakt förändringar i röster.
 Om R² = 0.00, arbetslösheten har ingen koppling alls till röster – förändringar i arbetslöshet påverkar inte antalet röster.
-Om R² = 0.090, som du fick, betyder det att endast 9 % av variationen i röster beror på arbetslösheten.Det är en väldigt svag koppling, vilket innebär att andra faktorer(t.ex.politiska åsikter, ekonomi, lokalpolitik) är mer avgörande än just arbetslösheten.
+Om R² = 0.090, betyder det att endast 9 % av variationen i röster beror på arbetslösheten.
+Det är en väldigt svag koppling, vilket innebär att andra faktorer(t.ex.politiska åsikter, ekonomi, lokalpolitik) är mer avgörande än just arbetslösheten.
 `);
 // Ladda Google Charts
 google.charts.load('current', { packages: ['corechart'], language: 'sv' });

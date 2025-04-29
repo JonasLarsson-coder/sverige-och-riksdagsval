@@ -14,15 +14,32 @@ console.log('electionResults from neo4j', electionResults);
 
 // **Skapar diagram för att jämföra röstresultat mellan 2018 och 2022**
 // Hämta data från Neo4j
+// Skapa en mappning för att ändra partinamnen
+const partyNameMapping = {
+  "Sverigedemokraterna": "SD",
+  "Socialdemokraterna": "S",
+  "Moderaterna": "M",
+  "Centerpartiet": "C",
+  "Liberalerna": "L",
+  "Kristdemokraterna": "KD",
+  "Vänsterpartiet": "V",
+  "Miljöpartiet de gröna": "MP",
+  "Arbetarepartiet-Socialdemokraterna": "S",
+
+
+};
+
+// Hämta data från Neo4j och uppdatera partinamnen
 let dataForChart = (await dbQuery(`
   MATCH (p:Partiresultat) RETURN p.parti AS parti, SUM(p.roster2018) AS röster2018, SUM(p.roster2022) AS röster2022
   ORDER BY parti;
 `)).map(x => ({
-  parti: x.parti,
+  parti: partyNameMapping[x.parti] || x.parti, // Byt namn om det finns i mappningen
   röster2018: +x.röster2018, // Säkerställ att värdena är numeriska
   röster2022: +x.röster2022
 }));
 
+// Rita diagrammet med de uppdaterade namnen
 drawGoogleChart({
   type: 'ColumnChart',
   data: makeChartFriendly(dataForChart, 'parti', 'röster2018', 'röster2022'),
