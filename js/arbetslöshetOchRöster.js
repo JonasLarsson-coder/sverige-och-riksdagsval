@@ -134,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
 fetchAndMergeData();
 
 //nytt kodblock för att hämta och visualisera data  
-addMdToPage(`
+addMdToPage(`### Korrelationsanalys mellan arbetslöshet och röster
 R²-värdet berättar hur bra arbetslöshet kan förklara antalet röster i valet.
 Om R² = 1.00, arbetslösheten förklarar allt – varje förändring i arbetslöshet matchar exakt förändringar i röster.
 Om R² = 0.00, arbetslösheten har ingen koppling alls till röster – förändringar i arbetslöshet påverkar inte antalet röster.
