@@ -232,7 +232,7 @@ Forskarutbildning och eftergymnasial utbildning 3+ år under respektive valår p
     }
     window.forskarKommuner = forskarRader.map(k => k.Kommun);
     window.eftergymKommuner = eftergymRader.map(k => k.Kommun);
-
+    //
 
   }
 
@@ -453,9 +453,9 @@ Trots den ursprungliga hypotesen om att konservativa partier skulle vara i framk
           }
         },
         animation: {
-          startup: true, // viktigt! animera från start
-          duration: 1000, // 1000 ms = 1 sekund
-          easing: 'out' // 'out' ger en snygg avtoning
+          startup: true,
+          duration: 1000, // Hela animnationsbiten är rätt pointless innan jag förstår hur jag kan "stanna kvar"
+          easing: 'out'
         }
       }
     });
