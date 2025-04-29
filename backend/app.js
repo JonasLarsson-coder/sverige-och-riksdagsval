@@ -48,16 +48,19 @@ app.use((req, res, next) => {
     let file = req.url.slice(1).split('?')[0].split('/');
     file = path.join(dirname, '..', ...file);
     if (fs.existsSync(file)) {
-      let content = fs.readFileSync(file, 'utf-8').split('\n');
-      let imports = [];
-      while (content[0].trim().startsWith('import')) {
-        imports.push(content.shift());
+      try {
+        let content = fs.readFileSync(file, 'utf-8').split('\n');
+        let imports = [];
+        while (content[0].trim().startsWith('import')) {
+          imports.push(content.shift());
+        }
+        imports.length && imports.push('\n');
+        content = imports.join('\n') + `export default async () => { ${content.join('\n')} }`;
+        res.type('application/javascript');
+        res.send(content);
+        return;
       }
-      imports.length && imports.push('\n');
-      content = imports.join('\n') + `export default async () => { ${content.join('\n')} }`;
-      res.type('application/javascript');
-      res.send(content);
-      return;
+      catch (e) { res.send(''); }
     }
   }
   next();

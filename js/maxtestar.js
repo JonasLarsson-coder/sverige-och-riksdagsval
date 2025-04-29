@@ -16,21 +16,38 @@ function setDropdownListener(dropdownId, callback) {
 
 
 async function run() {
-  // 1. Rubrik och introduktion
+
   addMdToPage("## Utbildning och valresultat per kommun");
   addMdToPage(`
 
 Diagrammet nedan visar valresultatet i vald kommun, samt hur stor andel av befolkningen som har en viss utbildningsnivå.  
-Det ger en bra möjlighet att se hur utbildningsnivå kan hänga ihop med röstmönster.
-Ingenting av detta är säkerställt då vi inte kan veta att just dessa personer faktiskt har röstat i valet.
-Detta skulle däremot kunna vara en av många anledningar till varför det ser ut som
+Min ursprungliga hypotes var att kommuner med hög utbildningsnivå skulle luta mer åt de konservativa partierna.  
+Under arbetets gång visade dock datan på ett eventuellt annat mönster.
+Det jag kommer titta närmare på: 
+Forskarutbildning och eftergymnasial utbildning 3+ år under respektive valår per kommun
 
-Framöver kommer vi  kunna titta närmare på :  
-- Den kommun per län där störst andel har **forskarutbildning**  
-- Den kommun per län där störst andel har **eftergymnasial utbildning 3 år eller mer**  
-- Hur rösterna till riksdagsvalet såg ut 2018 och 2022 i dessa kommuner.
+
 `);
-  addMdToPage('<div id="scroll-top-kommun"></div>');
+
+  function pearsonCorrelation(x, y) {
+    const n = x.length;
+    const avgX = x.reduce((a, b) => a + b, 0) / n;
+    const avgY = y.reduce((a, b) => a + b, 0) / n;
+
+    let num = 0;
+    let denX = 0;
+    let denY = 0;
+
+    for (let i = 0; i < n; i++) {
+      const dx = x[i] - avgX;
+      const dy = y[i] - avgY;
+      num += dx * dy;
+      denX += dx * dx;
+      denY += dy * dy;
+    }
+
+    return num / Math.sqrt(denX * denY);
+  }
 
 
   await dbQuery.use("geo-mysql");
@@ -119,8 +136,6 @@ Framöver kommer vi  kunna titta närmare på :
         legend: "none",
         hAxis: {
           title: "Partier",
-          slantedText: true,
-          slantedTextAngle: 45
         },
         vAxis: {
           title: "Antal röster"
@@ -133,7 +148,7 @@ Framöver kommer vi  kunna titta närmare på :
         },
         animation: {
           startup: true,
-          duration: 1000,   // vill få en mjuk animerin av staplarna--> när jag ändrar val laddas jag om till högst upp
+          duration: 1000,   // vill få en mjuk animerin av staplarna--> när jag ändrar val laddas jag om till högst upp. så pointless really
           easing: 'out'
         }
       }
@@ -168,9 +183,15 @@ Framöver kommer vi  kunna titta närmare på :
   await visaValresultat(valtKommun);
 
 
-  addMdToPage("##  Kommuner med högst utbildningsnivå per län");
 
   let årUtbildning = addDropdown("Välj år för utbildningsnivå", [2018, 2022], 2022);
+
+  // Denna visas visuellt under första diagrammet, ta bort.. innan inlämning. Hinenr ej omdefinera användningsområde nedan.
+
+
+
+
+
 
   async function visaTabeller() {
     await dbQuery.use("utbildning-ren.sqlite");
@@ -213,21 +234,6 @@ Framöver kommer vi  kunna titta närmare på :
     window.eftergymKommuner = eftergymRader.map(k => k.Kommun);
 
 
-    // SORTERA från högst till lägst procent:
-    forskarRader.sort((a, b) => parseFloat(b.Andel) - parseFloat(a.Andel));
-    eftergymRader.sort((a, b) => parseFloat(b.Andel) - parseFloat(a.Andel));
-
-    addMdToPage("###  Kommuner med högst andel forskarutbildning ");
-    tableFromData({
-      data: forskarRader,
-      columns: [{ name: "Län", label: "Län" }, { name: "Kommun", label: "Kommun" }, { name: "Andel", label: "Andel (%)" }]
-    });
-
-    addMdToPage("###  Kommuner med högst andel eftergymnasial utbildning 3 år eller mer");
-    tableFromData({
-      data: eftergymRader,
-      columns: [{ name: "Län", label: "Län" }, { name: "Kommun", label: "Kommun" }, { name: "Andel", label: "Andel (%)" }]
-    });
   }
 
   await visaTabeller();
@@ -251,10 +257,11 @@ Framöver kommer vi  kunna titta närmare på :
 
 
   async function visaValresultatToppKommuner(valdUtbildningstyp, valtÅr) {
-    await dbQuery.use("riksdagsval-neo4j");
-    await dbQuery.use("utbildning-ren.sqlite");
+    let totalRödgröna = 0, totalBlåa = 0, totalSD = 0;
 
-    const utbildningAllData = await dbQuery(`
+    // Hämta utbildningsdata
+    await dbQuery.use("utbildning-ren.sqlite");
+    let utbildningAllData = await dbQuery(`
     SELECT kommun, år, SUM(antal) AS total,
       SUM(CASE WHEN LOWER(utbildningsnivå) = 'forskarutbildning' THEN antal ELSE 0 END) AS forskarutbildning,
       SUM(CASE WHEN LOWER(utbildningsnivå) = 'eftergymnasial utbildning, 3 år eller mer' THEN antal ELSE 0 END) AS eftergymnasial
@@ -262,10 +269,12 @@ Framöver kommer vi  kunna titta närmare på :
     GROUP BY kommun, år
   `);
 
-    const kommunerValdaNamn = (valdUtbildningstyp === "Forskarutbildning") ? window.forskarKommuner : window.eftergymKommuner;
+    // Lista med kommuner (en per län) baserat på vald utbildningstyp
+    let kommunerValdaNamn = (valdUtbildningstyp === "Forskarutbildning") ? window.forskarKommuner : window.eftergymKommuner;
 
-    const utbildningPerKommun = kommunerValdaNamn.map(kommun => {
-      const u = utbildningAllData.find(u => u.kommun === kommun && u.år == valtÅr);
+    // Hämta kommuner och deras utbildningsdata
+    let utbildningPerKommun = kommunerValdaNamn.map(kommun => {
+      let u = utbildningAllData.find(u => u.kommun === kommun && u.år == valtÅr);
       if (!u) return null;
       return {
         kommun: kommun,
@@ -274,37 +283,41 @@ Framöver kommer vi  kunna titta närmare på :
       };
     }).filter(k => k !== null);
 
-    let totalRödgröna = 0, totalBlåa = 0, totalSD = 0;
+    // Samla valresultat för de valda kommunerna
+    await dbQuery.use("riksdagsval-neo4j");
+
     let chartDataTopp = [["Kommun", "Rödgröna", "Blåa", "SD"]];
 
-    for (const k of utbildningPerKommun) {
-      const valresultat = await dbQuery(`
+    for (let k of utbildningPerKommun) {
+      let valresultat = await dbQuery(`
       MATCH (n:Partiresultat)
       WHERE n.kommun = '${k.kommun}'
       RETURN n.parti AS parti, n.roster2018 AS roster2018, n.roster2022 AS roster2022
     `);
 
+      let totalRoster = valresultat.reduce((sum, r) => sum + (valtÅr == 2018 ? r.roster2018 : r.roster2022), 0) || 1;
+
       let rödgröna = 0, blåa = 0, sd = 0;
-      const totalRoster = (Array.isArray(valresultat) ? valresultat : []).reduce(
-        (sum, r) => sum + (valtÅr == 2018 ? r.roster2018 : r.roster2022),
-        0
-      ) || 1;
 
-      for (const r of valresultat) {
-        const parti = r.parti;
-        const roster = valtÅr == 2018 ? r.roster2018 : r.roster2022;
-
-        if (valtÅr == 2018) {
-          if (["Arbetarepartiet-Socialdemokraterna", "Vänsterpartiet", "Miljöpartiet de gröna"].includes(parti)) rödgröna += roster;
-          else if (["Moderaterna", "Centerpartiet", "Kristdemokraterna", "Liberalerna "].includes(parti)) blåa += roster;
-          else if (parti === "Sverigedemokraterna") sd += roster;
-        } else if (valtÅr == 2022) {
-          if (["Arbetarepartiet-Socialdemokraterna", "Vänsterpartiet", "Miljöpartiet de gröna", "Centerpartiet"].includes(parti)) rödgröna += roster;
-          else if (["Moderaterna", "Kristdemokraterna", "Liberalerna "].includes(parti)) blåa += roster;
-          else if (parti === "Sverigedemokraterna") sd += roster;
+      for (let r of valresultat) {
+        let parti = r.parti;
+        let roster = valtÅr == 2018 ? r.roster2018 : r.roster2022;
+        if (["Arbetarepartiet-Socialdemokraterna", "Vänsterpartiet", "Miljöpartiet de gröna"].includes(parti)) {
+          rödgröna += roster;
+        } else if (["Moderaterna", "Kristdemokraterna", "Liberalerna "].includes(parti)) {
+          blåa += roster;
+        } else if (parti === "Centerpartiet") {
+          if (valtÅr == 2018) {
+            blåa += roster; // C tillhör blåa 2018
+          } else {
+            rödgröna += roster; // C tillhör rödgröna 2022
+          }
+        } else if (parti === "Sverigedemokraterna") {
+          sd += roster; // SD ska vara eget block både 2018 och 2022, aggerade som stöd till konservativa men ej en riktigt DEL av det
         }
       }
 
+      // Uppdatera de aggregerade summorna
       totalRödgröna += rödgröna;
       totalBlåa += blåa;
       totalSD += sd;
@@ -315,28 +328,89 @@ Framöver kommer vi  kunna titta närmare på :
         +(blåa / totalRoster * 100).toFixed(1),
         +(sd / totalRoster * 100).toFixed(1)
       ]);
+
+    }
+    // 🔍 Korrelation och gemensamt scatterdiagram
+    let utbildning = [];
+    let rostaRG = [];
+
+    for (let row of chartDataTopp.slice(1)) {
+      utbildning.push(
+        valdUtbildningstyp === "Forskarutbildning"
+          ? utbildningPerKommun.find(k => k.kommun === row[0]).forskarProcent
+          : utbildningPerKommun.find(k => k.kommun === row[0]).eftergymnasialProcent
+      );
+      rostaRG.push(row[1]); // rödgröna andel
     }
 
-    const totalRöster = totalRödgröna + totalBlåa + totalSD;
-    const aggergeradData = [
-      { Grupp: "Rödgrön", Andel: ((totalRödgröna / totalRöster) * 100).toFixed(1) + "%" },
-      { Grupp: "Blå", Andel: ((totalBlåa / totalRöster) * 100).toFixed(1) + "%" },
-      { Grupp: "SD", Andel: ((totalSD / totalRöster) * 100).toFixed(1) + "%" }
-    ];
+    const r = pearsonCorrelation(utbildning, rostaRG);
 
-    addMdToPage(`### Aggregerat valresultat i toppkommuner (${valdUtbildningstyp}, ${valtÅr})`);
-    tableFromData({
-      data: aggergeradData,
-      columns: [
-        { name: "Grupp", label: "Partigrupp" },
-        { name: "Andel", label: "Andel (%)" }
-      ]
+    addMdToPage(`### Korrelation mellan utbildningsnivå och rödgrön röstandel (${valtÅr})`);
+    addMdToPage(`**Pearsons r:** ${r.toFixed(2)}  
+Ett värde nära +1 betyder starkt positivt samband.`);
+
+    let scatterData = [["Utbildningsnivå (%)", "Rödgröna röstandel (%)"]];
+    for (let i = 0; i < utbildning.length; i++) {
+      scatterData.push([utbildning[i], rostaRG[i]]);
+    }
+
+    drawGoogleChart({
+      type: "ScatterChart",
+      data: scatterData,
+      options: {
+        title: `Samband mellan utbildningsnivå och rödgrönt väljarstöd – alla toppkommuner (${valdUtbildningstyp}, ${valtÅr})`,
+        hAxis: { title: "Utbildningsnivå (%)" },
+        vAxis: { title: "Rödgröna röstandel (%)" },
+        pointSize: 7,
+        trendlines: { 0: { color: "#CC0000" } },
+        height: 500,
+        animation: {
+          startup: true,
+          duration: 1000,
+          easing: "out"
+        }
+      }
     });
 
-    const chartAggData = [
+
+    const totalRöster = totalRödgröna + totalBlåa + totalSD;
+
+    let aggergeradData = [
+      { Grupp: "Rödgröna", Andel: ((totalRödgröna / totalRöster) * 100).toFixed(1) + "%" },
+      { Grupp: "Blåa", Andel: ((totalBlåa / totalRöster) * 100).toFixed(1) + "%" },
+      { Grupp: "Sverigedemokraterna", Andel: ((totalSD / totalRöster) * 100).toFixed(1) + "%" }
+    ];
+
+    if (valtÅr === 2018) {
+      aggergeradData.push({ Grupp: "SD", Andel: ((totalSD / totalRöster) * 100).toFixed(1) + "%" });
+    }
+
+
+
+
+    addMdToPage("## Valresultat i de kommuner med högst procentuell andel högutbildade");
+    addMdToPage(`
+I diagrammet nedan analyseras valresultatet i de kommuner som har störst andel invånare med forskarutbildning eller lång eftergymnasial utbildning.
+
+Trots den ursprungliga hypotesen om att konservativa partier skulle vara i framkant här visar diagrammen:
+- De rödgröna partierna (S, V, MP) är starka i dessa kommuner.
+- Blåa blocket (M, KD, L) är betydande, men ofta mindre än rödgröna.
+- Sverigedemokraterna ett relativt stort stöd, men i närheten av dom två blocken
+- **Notera** C skiftade block till Rödgröna 2022.
+
+
+`);
+
+
+    let chartAggData = [
       ["Grupp", "Andel"],
       ...aggergeradData.map(row => [row.Grupp, parseFloat(row.Andel.replace("%", ""))])
     ];
+
+
+
+
+
 
     drawGoogleChart({
       type: "PieChart",
@@ -345,8 +419,8 @@ Framöver kommer vi  kunna titta närmare på :
         title: `Aggregerat valresultat i toppkommuner (${valdUtbildningstyp}, ${valtÅr})`,
         height: 400,
         legend: { position: "top" },
-        colors: ["#CC0000", "#4169E1", "#F7DC6F"],
-        pieSliceText: "percentage",
+        colors: ["#CC0000", "#4169E1", "#F7DC6F"],  // valfritt
+        vAxis: { title: "Andel (%)" },
         animation: {
           startup: true,
           duration: 1000,
@@ -355,6 +429,7 @@ Framöver kommer vi  kunna titta närmare på :
       }
     });
 
+    // Visa diagrammet för de valda kommunerna
     drawGoogleChart({
       type: "ColumnChart",
       data: chartDataTopp,
@@ -370,29 +445,45 @@ Framöver kommer vi  kunna titta närmare på :
           slantedTextAngle: 45
         },
         annotations: {
-          alwaysOutside: true
+          alwaysOutside: true,
+          textStyle: {
+            fontSize: 11,
+            bold: true,
+            color: '#000000'
+          }
         },
         animation: {
-          startup: true,
-          duration: 1000,
-          easing: 'out'
+          startup: true, // viktigt! animera från start
+          duration: 1000, // 1000 ms = 1 sekund
+          easing: 'out' // 'out' ger en snygg avtoning
         }
       }
     });
-
   }
+
+
+
+
+
+
   await visaValresultatToppKommuner(valdUtbildningstyp, valtÅr);
+  await visaTabellAggregerat(valdUtbildningstyp, valtÅr);
+
 
   setDropdownListener("Välj utbildningstyp för diagram", nyttVal => {
     valdUtbildningstyp = nyttVal;
     visaValresultatToppKommuner(valdUtbildningstyp, valtÅr);
+    visaTabellAggregerat(valdUtbildningstyp, valtÅr);
   });
 
   setDropdownListener("Välj år för valresultat för diagram", nyttVal => {
     valtÅr = parseInt(nyttVal);
     visaValresultatToppKommuner(valdUtbildningstyp, valtÅr);
+    visaTabellAggregerat(valdUtbildningstyp, valtÅr);
   });
 
-}
-run();
 
+
+}
+
+run();

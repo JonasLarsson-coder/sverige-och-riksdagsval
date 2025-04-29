@@ -5,4 +5,6 @@ createMenu('Sverige och våra senaste två riksdagsval', [
   { name: 'Hitta trender', script: 'trends.js' },
   { name: 'Max testar sin sida', script: 'max-sida.js' },
   { name: 'Jonas testar sin sida', script: 'JonasTest.js' },
+  { name: 'Max rätt version', script: 'maxtestar.js' },
+  { name: 'Max sammanfattning', script: 'sammanfattning.js' },
 ]);                             

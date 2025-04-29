@@ -16,6 +16,7 @@
     "mongodb": "^6.15.0",
     "mysql2": "^3.14.0",
     "neo4j-driver": "^5.28.1",
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.1.9",
+    "pandas": "^0.0.3"
   }
 }
