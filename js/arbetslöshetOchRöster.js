@@ -144,6 +144,8 @@ Om R² = 0.090, som du fick, betyder det att endast 9 % av variationen i röster
 google.charts.load('current', { packages: ['corechart'], language: 'sv' });
 google.charts.setOnLoadCallback(initCorrelationChart);
 
+
+
 // Kontrollera och initiera diagrammet när data är tillgängligt
 function initCorrelationChart() {
   console.log("Startar initCorrelationChart...");
