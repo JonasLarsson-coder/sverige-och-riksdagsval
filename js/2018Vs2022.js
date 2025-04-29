@@ -1,7 +1,9 @@
 
 
 
-addMdToPage(`## Hur förändrades antalet röster på de olika partierna från de olika åren?`)
+addMdToPage(`## Hur förändrades antalet röster för de olika partierna från de olika åren?`)
+addMdToPage(`Diagrammet nedan visar hur många röster de olika partierna fick i riksdagsvalen 2018 och 2022. Du kan också välja ett parti och ett år för att se hur många röster det fick i det valet.`);
+
 //Röstresultat för varje parti i riksdagsvalen 2018 och 2022
 dbQuery.use('riksdagsval-neo4j');
 let electionResults =

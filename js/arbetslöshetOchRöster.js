@@ -11,6 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
     Här kan du jämföra arbetslöshet och röster i riksdagsvalet 2022 för olika kommuner.
     Välj en kommun för att se detaljerad information.
   `);
+
+  addMdToPage(` Påverkar arbetslöshet antalet röster i riksdagsvalet 2022?`);
 });
 
 async function fetchAndMergeData() {
@@ -134,21 +136,27 @@ fetchAndMergeData();
 //nytt kodblock för att hämta och visualisera data  
 
 // Ladda Google Charts
-google.charts.load('current', { packages: ['corechart'] });
+google.charts.load('current', { packages: ['corechart'], language: 'sv' });
 google.charts.setOnLoadCallback(initCorrelationChart);
 
-// Initiera diagrammet när data är tillgängligt
+// Kontrollera och initiera diagrammet när data är tillgängligt
 function initCorrelationChart() {
-  if (mergedData.length > 0) {
-    drawCorrelationChart();
-  } else {
-    console.log("Data är inte tillgänglig ännu, väntar...");
-    setTimeout(initCorrelationChart, 500);
+  console.log("Startar initCorrelationChart...");
+
+  if (!mergedData || mergedData.length === 0) {
+    console.error("Data är inte tillgänglig ännu, väntar...");
+    setTimeout(initCorrelationChart, 1000);
+    return;
   }
+
+  console.log("Data finns, ritar diagram...");
+  drawCorrelationChart();
 }
 
-// Beräkna R²-värdet för korrelationsanalys
+// Ny beräkning av R²-värdet
 function calculateRSquared(data) {
+  console.log("Beräknar R²...");
+
   let röster = [];
   let arbetslösa = [];
 
@@ -164,19 +172,34 @@ function calculateRSquared(data) {
     return null;
   }
 
-  let meanX = röster.reduce((sum, val) => sum + val, 0) / röster.length;
-  let meanY = arbetslösa.reduce((sum, val) => sum + val, 0) / arbetslösa.length;
+  let meanX = arbetslösa.reduce((sum, val) => sum + val, 0) / arbetslösa.length;
+  let meanY = röster.reduce((sum, val) => sum + val, 0) / röster.length;
 
-  let numerator = röster.reduce((sum, val, i) => sum + Math.pow((arbetslösa[i] - meanY) - ((val - meanX) * (arbetslösa[i] - meanY) / (val - meanX)), 2), 0);
-  let denominator = röster.reduce((sum, val, i) => sum + Math.pow(arbetslösa[i] - meanY, 2), 0);
+  // Beräkna SS_total och SS_res
+  let ssTotal = röster.reduce((sum, y) => sum + Math.pow(y - meanY, 2), 0);
+  let ssRes = arbetslösa.reduce((sum, x, i) => sum + Math.pow(röster[i] - (meanY + (x - meanX)), 2), 0);
 
-  let rSquared = 1 - (numerator / denominator);
+  let rSquared = 1 - (ssRes / ssTotal);
 
-  return rSquared.toFixed(3); // Begränsar till 3 decimaler
+  // Visa R² på sidan
+  let rSquaredElement = document.getElementById("rSquaredOutput");
+  if (!rSquaredElement) {
+    rSquaredElement = document.createElement("div");
+    rSquaredElement.id = "rSquaredOutput";
+    rSquaredElement.style.fontSize = "18px";
+    rSquaredElement.style.marginTop = "10px";
+    document.body.appendChild(rSquaredElement);
+  }
+  rSquaredElement.innerHTML = `<strong>R²-värde:</strong> ${rSquared.toFixed(3)}`;
+
+  console.log(`R²-värde beräknat: ${rSquared.toFixed(3)}`);
+  return rSquared.toFixed(3);
 }
 
-// Konvertera data till ett format som Google Charts kan använda med tooltip
+// Konvertera data till Google Charts-format med tooltip
 function makeCorrelationFriendly() {
+  console.log("Konverterar data till Google Charts-format...");
+
   let chartData = [['Antal röster 2022', 'Antal arbetslösa Aug 2022', { role: 'tooltip' }]];
 
   mergedData.forEach(d => {
@@ -186,12 +209,13 @@ function makeCorrelationFriendly() {
     }
   });
 
+  console.log("chartData:", chartData);
   return chartData.length > 1 ? chartData : [['Antal röster 2022', 'Antal arbetslösa Aug 2022', { role: 'tooltip' }], [0, 0, 'Ingen data']];
 }
 
 // Rita korrelationsdiagrammet med regressionslinje och R²-värde
 function drawCorrelationChart() {
-  console.log("Ritar korrelationsdiagram...");
+  console.log("Startar ritning av korrelationsdiagram...");
 
   if (!mergedData || mergedData.length === 0) {
     console.error("Data är inte tillgänglig ännu!");
@@ -202,12 +226,12 @@ function drawCorrelationChart() {
   let rSquaredValue = calculateRSquared(mergedData);
 
   let options = {
-    title: `Korrelation mellan antal röster och arbetslöshet (R² = ${rSquaredValue})`,
+    title: `Korrelation mellan röster och arbetslöshet (R² = ${rSquaredValue})`,
     hAxis: { title: 'Antal röster 2022', minValue: 0 },
     vAxis: { title: 'Antal arbetslösa Aug 2022', minValue: 0 },
     legend: 'none',
     pointSize: 5,
-    tooltip: { isHtml: true }, // Aktiverar HTML-tooltips
+    tooltip: { isHtml: true },
     colors: ['#d95f02'],
     trendlines: {
       0: {
@@ -215,25 +239,37 @@ function drawCorrelationChart() {
         color: '#1b9e77',
         lineWidth: 3,
         opacity: 0.7,
-        showR2: true // Visar R²-värdet för linjen
+        showR2: true
       }
     }
   };
 
   let chartElement = document.getElementById('correlationChart');
   if (!chartElement) {
+    console.log("Skapar correlationChart-element...");
     chartElement = document.createElement("div");
     chartElement.id = "correlationChart";
-    chartElement.style.width = "600px";
-    chartElement.style.height = "400px";
+    chartElement.style.width = "1000px";
+    chartElement.style.height = "500px";
     document.body.appendChild(chartElement);
   }
 
+  console.log("Ritar diagrammet...");
   let chart = new google.visualization.ScatterChart(chartElement);
   chart.draw(data, options);
 }
 
 // Se till att diagrammet ritas när data hämtas
 document.addEventListener("DOMContentLoaded", () => {
-  setTimeout(initCorrelationChart, 500);
+  setTimeout(initCorrelationChart, 1000);
 });
+
+
+addMdToPage(`
+R²-värdet berättar hur bra arbetslöshet kan förklara antalet röster i valet.
+Om R² = 1.00, arbetslösheten förklarar allt – varje förändring i arbetslöshet matchar exakt förändringar i röster.
+Om R² = 0.00, arbetslösheten har ingen koppling alls till röster – förändringar i arbetslöshet påverkar inte antalet röster.
+Om R² = 0.090, som du fick, betyder det att endast 9 % av variationen i röster beror på arbetslösheten.Det är en väldigt svag koppling, vilket innebär att andra faktorer(t.ex.politiska åsikter, ekonomi, lokalpolitik) är mer avgörande än just arbetslösheten.
+`);
+
+
