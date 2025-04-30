@@ -2,7 +2,7 @@
 
 
 addMdToPage(`## Hur förändrades antalet röster för de olika partierna från de olika åren?`)
-addMdToPage(`Diagrammet nedan visar hur många röster de olika partierna fick i riksdagsvalen 2018 och 2022. Här kan man också välja ett parti och ett år för att se hur många röster det fick i det valet, samt procentuell skillnad.`);
+addMdToPage(`Diagrammet nedan visar hur många röster de olika partierna fick i riksdagsvalen 2018 och 2022. Du kan också välja ett parti och ett år för att se hur många röster det fick i det valet.`);
 
 //Röstresultat för varje parti i riksdagsvalen 2018 och 2022
 dbQuery.use('riksdagsval-neo4j');
@@ -14,30 +14,32 @@ console.log('electionResults from neo4j', electionResults);
 
 // **Skapar diagram för att jämföra röstresultat mellan 2018 och 2022**
 // Hämta data från Neo4j
-
-
+// Skapa en mappning för att ändra partinamnen
 const partyNameMapping = {
+  "Sverigedemokraterna": "SD",
+  "Socialdemokraterna": "S",
   "Moderaterna": "M",
-  "Arbetarepartiet-Socialdemokraterna": "S",
   "Centerpartiet": "C",
+  "Liberalerna": "L",
   "Kristdemokraterna": "KD",
   "Vänsterpartiet": "V",
-  "Liberalerna": "Folkpartiet",
-  "Sverigedemokraterna": "SD",
   "Miljöpartiet de gröna": "MP",
+  "Arbetarepartiet-Socialdemokraterna": "S",
 
 
 };
 
+// Hämta data från Neo4j och uppdatera partinamnen
 let dataForChart = (await dbQuery(`
   MATCH (p:Partiresultat) RETURN p.parti AS parti, SUM(p.roster2018) AS röster2018, SUM(p.roster2022) AS röster2022
   ORDER BY parti;
 `)).map(x => ({
-  parti: partyNameMapping[x.parti] || x.parti, // Replace name if it exists in the mapping
-  röster2018: +x.röster2018, // Ensure values are numeric
+  parti: partyNameMapping[x.parti] || x.parti, // Byt namn om det finns i mappningen
+  röster2018: +x.röster2018, // Säkerställ att värdena är numeriska
   röster2022: +x.röster2022
 }));
 
+// Rita diagrammet med de uppdaterade namnen
 drawGoogleChart({
   type: 'ColumnChart',
   data: makeChartFriendly(dataForChart, 'parti', 'röster2018', 'röster2022'),
@@ -51,7 +53,6 @@ drawGoogleChart({
     bar: { groupWidth: '80%' }
   }
 });
-
 
 
 
