@@ -1,3 +1,12 @@
+addMdToPage(`
+## Hur påverkar arbetslöshet antalet röster i valet?
+
+I den här undersökningen tittar vi på sambandet mellan arbetslöshet och antalet röster i riksdagsvalet 2022.  
+- **Arbetslöshetsdata**: Vi använder statistik för personer i åldern 16–64 år, eftersom det inte gick att filtrera från 18 år.  
+- **Tidsram**: Siffrorna är från augusti 2022 för att ge en mer exakt bild av arbetslösheten vid valet.  
+
+Diagrammet nedan visar hur antalet röster varje kommun fick i valet 2022 jämförs med antalet arbetslösa i samma kommun i augusti 2022.  
+`);
 
 
 // Gör kommunLista och mergedData globalt tillgängliga
@@ -134,17 +143,10 @@ document.addEventListener("DOMContentLoaded", () => {
 fetchAndMergeData();
 
 //nytt kodblock för att hämta och visualisera data  
-addMdToPage(`
-R²-värdet berättar hur bra arbetslöshet kan förklara antalet röster i valet.
-Om R² = 1.00, arbetslösheten förklarar allt – varje förändring i arbetslöshet matchar exakt förändringar i röster.
-Om R² = 0.00, arbetslösheten har ingen koppling alls till röster – förändringar i arbetslöshet påverkar inte antalet röster.
-Om R² = 0.090, som du fick, betyder det att endast 9 % av variationen i röster beror på arbetslösheten.Det är en väldigt svag koppling, vilket innebär att andra faktorer(t.ex.politiska åsikter, ekonomi, lokalpolitik) är mer avgörande än just arbetslösheten.
-`);
+
 // Ladda Google Charts
 google.charts.load('current', { packages: ['corechart'], language: 'sv' });
 google.charts.setOnLoadCallback(initCorrelationChart);
-
-
 
 // Kontrollera och initiera diagrammet när data är tillgängligt
 function initCorrelationChart() {
@@ -270,7 +272,18 @@ function drawCorrelationChart() {
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(initCorrelationChart, 1000);
 });
+addMdToPage(`### Vad betyder R²-värdet ?  
+R²-värdet, även känt som determinationskoefficienten eller förklaringsgrad.
+R²-värdet visar sambandet mellan arbetslöshet och röster:  
+- **R² = 1.00** → Arbetslösheten påverkar antalet röster fullt ut – varje förändring i arbetslöshet matchar exakt förändringar i röster.  
+- **R² = 0.00** → Arbetslösheten har ingen koppling till antalet röster – förändringar i arbetslöshet påverkar inte rösterna alls.  
 
+I det här fallet är **R²-värdet 0.090**, vilket innebär att endast 9 % av variationerna i röster kan förklaras av arbetslösheten.  
+Det är en mycket svag koppling, vilket tyder på att andra faktorer, som politiska åsikter, ekonomi, lokalpolitik eller pandemin, spelar en större roll.
+
+**Källa för arbetslöshetsdata:**  
+[Statistiska centralbyrån (SCB) – Arbetslöshet](https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__AM__AM0210__AM0210A/ArbStatusM/sortedtable/tableViewSorted/)
+`);
 
 
 
