@@ -14,12 +14,27 @@ console.log('electionResults from neo4j', electionResults);
 
 // **Skapar diagram för att jämföra röstresultat mellan 2018 och 2022**
 // Hämta data från Neo4j
+
+
+const partyNameMapping = {
+  "Moderaterna": "M",
+  "Arbetarepartiet-Socialdemokraterna": "S",
+  "Centerpartiet": "C",
+  "Kristdemokraterna": "KD",
+  "Vänsterpartiet": "V",
+  "Liberalerna": "Folkpartiet",
+  "Sverigedemokraterna": "SD",
+  "Miljöpartiet de gröna": "MP",
+
+
+};
+
 let dataForChart = (await dbQuery(`
   MATCH (p:Partiresultat) RETURN p.parti AS parti, SUM(p.roster2018) AS röster2018, SUM(p.roster2022) AS röster2022
   ORDER BY parti;
 `)).map(x => ({
-  parti: x.parti,
-  röster2018: +x.röster2018, // Säkerställ att värdena är numeriska
+  parti: partyNameMapping[x.parti] || x.parti, // Replace name if it exists in the mapping
+  röster2018: +x.röster2018, // Ensure values are numeric
   röster2022: +x.röster2022
 }));
 
@@ -36,6 +51,7 @@ drawGoogleChart({
     bar: { groupWidth: '80%' }
   }
 });
+
 
 
 
