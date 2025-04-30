@@ -5,6 +5,7 @@ addMdToPage(`
 - De blåa partierna är relativt starka 2018 men tappar stöd 2022.
 - Sverigedemokraterna har konsekvent lägre stöd i högutbildade kommuner än i riket som helhet.
 - Mellan 2018 och 2022 har de rödgröna stärkt sin ledning bland högutbildade väljare.
+- Det ska sägas att den data jag har använt är information från SCB där jag har tittat på hur många utbildade i dom olika kategorierna som finns
 
 ### Samband mellan utbildning och politiska sympatier
 
