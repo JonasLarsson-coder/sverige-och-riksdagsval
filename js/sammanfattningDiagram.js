@@ -14,6 +14,7 @@ let kommunLista = [];
 let mergedData = [];
 let dropdownElement; // Deklarera globalt så att vi kan referera till den senare
 
+<<<<<<< HEAD
 document.addEventListener("DOMContentLoaded", () => {
   addMdToPage(`
     ## Arbetslöshet och röster i riksdagsvalet 2022
@@ -23,6 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   addMdToPage(` Påverkar arbetslöshet antalet röster i riksdagsvalet 2022?`);
 });
+=======
+>>>>>>> JonasBranch
 
 async function fetchAndMergeData() {
   try {
@@ -79,7 +82,11 @@ function createDropdown() {
     console.error("KommunLista är tom!");
     return;
   }
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> JonasBranch
   let labelElement = document.createElement("label");
   labelElement.textContent = "Välj kommun:";
 
@@ -258,8 +265,15 @@ function drawCorrelationChart() {
     console.log("Skapar correlationChart-element...");
     chartElement = document.createElement("div");
     chartElement.id = "correlationChart";
+<<<<<<< HEAD
     chartElement.style.width = "1000px";
     chartElement.style.height = "500px";
+=======
+    chartElement.style.width = "1400px";
+    chartElement.style.height = "500px";
+    chartElement.style.marginLeft = "55px"; // Flyttar diagrammet 30 pixlar åt höger
+
+>>>>>>> JonasBranch
     document.body.appendChild(chartElement);
   }
 
