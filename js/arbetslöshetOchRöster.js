@@ -14,15 +14,7 @@ let kommunLista = [];
 let mergedData = [];
 let dropdownElement; // Deklarera globalt så att vi kan referera till den senare
 
-document.addEventListener("DOMContentLoaded", () => {
-  addMdToPage(`
-    ## Arbetslöshet och röster i riksdagsvalet 2022
-    Här kan du jämföra arbetslöshet och röster i riksdagsvalet 2022 för olika kommuner.
-    Välj en kommun för att se detaljerad information.
-  `);
 
-  addMdToPage(` Påverkar arbetslöshet antalet röster i riksdagsvalet 2022?`);
-});
 
 async function fetchAndMergeData() {
   try {
@@ -253,6 +245,7 @@ function drawCorrelationChart() {
     }
   };
 
+
   let chartElement = document.getElementById('correlationChart');
   if (!chartElement) {
     console.log("Skapar correlationChart-element...");
@@ -260,6 +253,9 @@ function drawCorrelationChart() {
     chartElement.id = "correlationChart";
     chartElement.style.width = "1000px";
     chartElement.style.height = "500px";
+    chartElement.style.position = "relative";
+    
+
     document.body.appendChild(chartElement);
   }
 
@@ -272,6 +268,8 @@ function drawCorrelationChart() {
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(initCorrelationChart, 1000);
 });
+
+
 addMdToPage(`### Vad betyder R²-värdet ?  
 R²-värdet, även känt som determinationskoefficienten eller förklaringsgrad.
 R²-värdet visar sambandet mellan arbetslöshet och röster:  
@@ -284,6 +282,8 @@ Det är en mycket svag koppling, vilket tyder på att andra faktorer, som politi
 **Källa för arbetslöshetsdata:**  
 [Statistiska centralbyrån (SCB) – Arbetslöshet](https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__AM__AM0210__AM0210A/ArbStatusM/sortedtable/tableViewSorted/)
 `);
+
+
 
 
 
