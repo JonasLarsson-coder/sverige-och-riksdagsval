@@ -14,15 +14,6 @@ let kommunLista = [];
 let mergedData = [];
 let dropdownElement; // Deklarera globalt så att vi kan referera till den senare
 
-document.addEventListener("DOMContentLoaded", () => {
-  addMdToPage(`
-    ## Arbetslöshet och röster i riksdagsvalet 2022
-    Här kan du jämföra arbetslöshet och röster i riksdagsvalet 2022 för olika kommuner.
-    Välj en kommun för att se detaljerad information.
-  `);
-
-  addMdToPage(` Påverkar arbetslöshet antalet röster i riksdagsvalet 2022?`);
-});
 
 async function fetchAndMergeData() {
   try {
@@ -79,7 +70,7 @@ function createDropdown() {
     console.error("KommunLista är tom!");
     return;
   }
-
+  
   let labelElement = document.createElement("label");
   labelElement.textContent = "Välj kommun:";
 
@@ -258,8 +249,10 @@ function drawCorrelationChart() {
     console.log("Skapar correlationChart-element...");
     chartElement = document.createElement("div");
     chartElement.id = "correlationChart";
-    chartElement.style.width = "1000px";
+    chartElement.style.width = "1400px";
     chartElement.style.height = "500px";
+    chartElement.style.marginLeft = "55px"; // Flyttar diagrammet 30 pixlar åt höger
+
     document.body.appendChild(chartElement);
   }
 
