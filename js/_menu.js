@@ -1,9 +1,9 @@
 createMenu('Sverige och våra senaste två riksdagsval', [
-  { name: 'Nytt i version 7', script: 'new-in-v7.js' },
-  { name: 'Visa ett år', script: 'one-year.js' },
-  { name: 'Jämför två år', script: 'compare-two-years.js' },
-  { name: 'Hitta trender', script: 'trends.js' },
-  { name: 'Utbildning och val', script: 'max-sida.js' },
-  { name: 'Jonas testar sin sida', script: 'JonasTest.js' },
-  { name: 'Max sammanfattning', script: 'samm.js' },
-]);                             
+  { name: 'Inledning', script: 'inledning.js' },
+  { name: 'Utbildning och valresultat', script: 'max-sida.js' },
+  { name: 'Sammanfattning utbildning', script: 'samm.js' },
+  { name: 'Arbetslöshet och valresultat', script: 'sammanfattningDiagram.js' },
+  { name: '2018 jämfört med 2022', script: '2018Vs2022.js' }
+]);
+
+

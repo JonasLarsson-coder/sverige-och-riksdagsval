@@ -1,0 +1,56 @@
+
+
+//Joinar arbetslöshetsdatan med röstresultaten
+addMdToPage(`## Arbetslöshet och röster per kommun i riksdagsvalet 2022.`)
+async function fetchAndMergeData() {
+  try {
+    // Hämta röstdatan från Neo4j
+    dbQuery.use('riksdagsval-neo4j');
+    let rosterKommuner = await dbQuery(`
+      MATCH (p:Partiresultat)
+      RETURN p.kommun AS kommun, p.roster2022 AS roster2022;
+    `);
+
+    // Hämta arbetslöshetsdatan från SQLite
+    dbQuery.use('arbetslösa_2022.db');
+    let arbetslösaInfo = await dbQuery(`
+      SELECT Kommun AS kommun, arbetslösaAug2022 
+      FROM arbetslöshet;
+    `);
+
+    // Logga data för felsökning
+    console.log('Rådata från Neo4j:', rosterKommuner);
+    console.log('Rådata från SQLite:', arbetslösaInfo);
+
+    // Säkerställ att data är i arrayformat
+    rosterKommuner = Array.isArray(rosterKommuner) ? rosterKommuner : Object.values(rosterKommuner);
+    arbetslösaInfo = Array.isArray(arbetslösaInfo) ? arbetslösaInfo : Object.values(arbetslösaInfo);
+
+    // Summera röster per kommun
+    let rösterPerKommun = rosterKommuner.reduce((acc, row) => {
+      acc[row.kommun] = (acc[row.kommun] || 0) + row.roster2022;
+      return acc;
+    }, {});
+
+    // Slå ihop röstdatan med arbetslöshetsdata
+    let mergedData = Object.keys(rösterPerKommun).map(kommun => {
+      let match = arbetslösaInfo.find(arbetslöshet => arbetslöshet.kommun === kommun);
+      return {
+        kommun: kommun,
+        total_roster_2022: rösterPerKommun[kommun],
+        arbetslösaAug2022: match ? match.arbetslösaAug2022 : null
+      };
+    });
+
+
+
+
+    // Visa datan i tabellformat
+    tableFromData({ data: mergedData });
+
+  } catch (error) {
+    console.error("Fel vid hämtning eller sammanslagning av data:", error);
+  }
+}
+
+fetchAndMergeData();
