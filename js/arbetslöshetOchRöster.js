@@ -8,11 +8,12 @@ I den här undersökningen tittar vi på sambandet mellan arbetslöshet och anta
 Diagrammet nedan visar hur antalet röster varje kommun fick i valet 2022 jämförs med antalet arbetslösa i samma kommun i augusti 2022.  
 `);
 
-
+/*
 // Gör kommunLista och mergedData globalt tillgängliga
 let kommunLista = [];
 let mergedData = [];
 let dropdownElement; // Deklarera globalt så att vi kan referera till den senare
+*/
 
 
 
@@ -254,7 +255,7 @@ function drawCorrelationChart() {
     chartElement.style.width = "1000px";
     chartElement.style.height = "500px";
     chartElement.style.position = "relative";
-    
+
 
     document.body.appendChild(chartElement);
   }
