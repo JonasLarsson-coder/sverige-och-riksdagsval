@@ -4,7 +4,7 @@
 let kommunLista = [];
 let mergedData = [];
 let dropdownElement; // Deklarera globalt så att vi kan referera till den senare
-*/
+
 
 
 
