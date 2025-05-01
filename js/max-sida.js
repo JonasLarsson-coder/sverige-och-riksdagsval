@@ -9,7 +9,7 @@ function setDropdownListener(dropdownId, callback) {
         if (target) {
           target.scrollIntoView({ behavior: "smooth", block: "start" });
         }
-      }, 300); // Vänta lite så sidan hinner laddas klart
+      }, 300); // Vänta lite så sidan hinner laddas klart--> löste aldrig att stanna så pointless
     });
   }
 }
@@ -20,11 +20,11 @@ async function run() {
   addMdToPage("## Utbildning och valresultat per kommun");
   addMdToPage(`
 
-Diagrammet nedan visar valresultatet i vald kommun, samt hur stor andel av befolkningen som har en viss utbildningsnivå.  
-Min ursprungliga hypotes var att kommuner med hög utbildningsnivå skulle luta mer åt de konservativa partierna.  
+Diagrammet nedan visar valresultatet i vald kommun, samt hur stor procentuell andel av befolkningen som har en viss utbildningsnivå.  
+Min ursprungliga hypotes var att kommuner med hög utbildningsnivå skulle luta mer åt de konservativa partierna. 
 Under arbetets gång visade dock datan på ett eventuellt annat mönster.
 Det jag kommer titta närmare på: 
-Forskarutbildning och eftergymnasial utbildning 3+ år under respektive valår per kommun
+Forskarutbildning och eftergymnasial utbildning 3+ år under respektive valår per kommun.
 
 
 `);
@@ -186,8 +186,7 @@ Forskarutbildning och eftergymnasial utbildning 3+ år under respektive valår p
 
   let årUtbildning = addDropdown("Välj år för utbildningsnivå", [2018, 2022], 2022);
 
-  // Denna visas visuellt under första diagrammet, ta bort.. innan inlämning. Hinenr ej omdefinera användningsområde nedan.
-
+  // Denna visas visuellt under första diagrammet, ta bort.. Uppstår problematik med att den är kopplad till data nedan.
 
 
 
@@ -245,7 +244,7 @@ Forskarutbildning och eftergymnasial utbildning 3+ år under respektive valår p
   });
 
 
-  addMdToPage("##  Valresultat i de kommuner med högst procentuell andel biladade");
+  addMdToPage("##  Valresultat i de kommuner med högst procentuell andel högutbildade");
 
 
   let utbildningstypDropdown = addDropdown("Välj utbildningstyp för diagram", ["Forskarutbildning", "Eftergymnasial 3+ år"], "Forskarutbildning");
@@ -269,10 +268,10 @@ Forskarutbildning och eftergymnasial utbildning 3+ år under respektive valår p
     GROUP BY kommun, år
   `);
 
-    // Lista med kommuner (en per län) baserat på vald utbildningstyp
+    // Lista med kommuner (en per län) baserat på vald utbildningstyp för att kunna jobba med dessa i mina sista diagram
     let kommunerValdaNamn = (valdUtbildningstyp === "Forskarutbildning") ? window.forskarKommuner : window.eftergymKommuner;
 
-    // Hämta kommuner och deras utbildningsdata
+    // Hämta kommuner och deras utbildningsdata ish
     let utbildningPerKommun = kommunerValdaNamn.map(kommun => {
       let u = utbildningAllData.find(u => u.kommun === kommun && u.år == valtÅr);
       if (!u) return null;
@@ -283,7 +282,7 @@ Forskarutbildning och eftergymnasial utbildning 3+ år under respektive valår p
       };
     }).filter(k => k !== null);
 
-    // Samla valresultat för de valda kommunerna
+    // Samla valresultat för de valda kommunerna, TYDLIG skilland på att SD inte är en del av det blåa haveriet utan är sitt egna tjaffs
     await dbQuery.use("riksdagsval-neo4j");
 
     let chartDataTopp = [["Kommun", "Rödgröna", "Blåa", "SD"]];
@@ -313,7 +312,7 @@ Forskarutbildning och eftergymnasial utbildning 3+ år under respektive valår p
             rödgröna += roster; // C tillhör rödgröna 2022
           }
         } else if (parti === "Sverigedemokraterna") {
-          sd += roster; // SD ska vara eget block både 2018 och 2022, aggerade som stöd till konservativa men ej en riktigt DEL av det
+          sd += roster; // SD ska vara eget block både 2018 och 2022. inte bara 2018 som jag tänkte först. Slarvigt
         }
       }
 
@@ -330,7 +329,7 @@ Forskarutbildning och eftergymnasial utbildning 3+ år under respektive valår p
       ]);
 
     }
-    // 🔍 Korrelation och gemensamt scatterdiagram
+    //  Korrelation och gemensamt scatterdiagram---> lite oklart i mina ögon. liten urvalsgrupp?
     let utbildning = [];
     let rostaRG = [];
 
@@ -340,7 +339,7 @@ Forskarutbildning och eftergymnasial utbildning 3+ år under respektive valår p
           ? utbildningPerKommun.find(k => k.kommun === row[0]).forskarProcent
           : utbildningPerKommun.find(k => k.kommun === row[0]).eftergymnasialProcent
       );
-      rostaRG.push(row[1]); // rödgröna andel
+      rostaRG.push(row[1]); // rödgröna andel för just dettta
     }
 
     const r = pearsonCorrelation(utbildning, rostaRG);
@@ -392,11 +391,11 @@ Ett värde nära +1 betyder starkt positivt samband.`);
     addMdToPage(`
 I diagrammet nedan analyseras valresultatet i de kommuner som har störst andel invånare med forskarutbildning eller lång eftergymnasial utbildning.
 
-Trots den ursprungliga hypotesen om att konservativa partier skulle vara i framkant här visar diagrammen:
+Trots den ursprungliga hypotesen om att konservativa partier(Blåa) skulle vara i framkant här visar diagrammen:
 - De rödgröna partierna (S, V, MP) är starka i dessa kommuner.
 - Blåa blocket (M, KD, L) är betydande, men ofta mindre än rödgröna.
-- Sverigedemokraterna ett relativt stort stöd, men i närheten av dom två blocken
-- **Notera** C skiftade block till Rödgröna 2022.
+- Sverigedemokraterna har ett relativt stort stöd, men inte riktigt i närheten av dom två blocken.
+- **Notera** C skiftade block från Blåa till Rödgröna 2022.
 
 
 `);
@@ -429,7 +428,7 @@ Trots den ursprungliga hypotesen om att konservativa partier skulle vara i framk
       }
     });
 
-    // Visa diagrammet för de valda kommunerna
+    // Visa diagrammet för de valda kommunerna. Det jag vill göra här EGENTLIGEN är att få ner dropdownen till att vara mer nära respektive diagram. Problem när jag flyttar pga inladdning... text hamnar osammanhängande. 
     drawGoogleChart({
       type: "ColumnChart",
       data: chartDataTopp,
@@ -454,7 +453,7 @@ Trots den ursprungliga hypotesen om att konservativa partier skulle vara i framk
         },
         animation: {
           startup: true,
-          duration: 1000, // Hela animnationsbiten är rätt pointless innan jag förstår hur jag kan "stanna kvar"
+          duration: 1000, // Hela animnationsbiten är rätt pointless innan jag förstår hur jag kan "stanna kvar" då sidan laddas om.
           easing: 'out'
         }
       }
